@@ -5,29 +5,33 @@ import de.school.game.Game;
 import javax.swing.*;
 import java.awt.*;
 
-public abstract class Menu extends JPanel {
+/**
+ * the abstract Menu Class to easily create and switch between mennus/Windows
+ */
+public abstract class Menu extends JFrame {
+    public static Point windowLocation;
     public String name;
+
     public Menu(String name) {
-        name = name;
+        this.name = name;
+        setTitle(this.name);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
-
+    /**
+     * An abstract method to initialize and locate Widgets/Components
+     */
     public abstract void initWidgets();
-    private void setValues() {
-        setLayout(new GridLayout(Game.gameWindow().maxScreenRows,Game.gameWindow().maxScreenCol));
-    }
-    public void addMenu() {
-        initWidgets();
-        Game.gameWindow().add(this);
-        Game.gameWindow().repaint();
-    }
 
+    /**
+     * The Method to show the Menu to the player
+     */
     public void showMenu() {
-        addMenu();
-
+        Game.showGameWindow(false);
+        initWidgets();
         this.setVisible(true);
     }
     public void deleteMenu() {
-        Game.gameWindow().remove(this);
+        setVisible(false);
     }
 }
