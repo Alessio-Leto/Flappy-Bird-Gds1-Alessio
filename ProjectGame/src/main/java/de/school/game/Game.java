@@ -11,14 +11,13 @@ import de.school.game.input.InputListener;
 import de.school.game.util.FileUtil;
 import de.school.game.util.rendering.RenderUtil;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 
+/**
+ * The Game Class -> the Center of the project
+ */
 public class Game extends JFrame {
     private static GameWindow gameWindow;
     private static GameClock gameClock;
@@ -29,24 +28,37 @@ public class Game extends JFrame {
     private static GameController gameController;
     private static MainMenu mainMenu;
 
+    private static Game instance;
+
     private static AudioController audioController;
     public static int FPS;
 
     private static BufferedImage icon;
 
+    /**
+     *  The Constructor -> Specifies FPS, constructs the Mainmenu ...
+     */
     public Game(int FPS) {
+        instance = this;
         mainMenu = new MainMenu();
+        this.setVisible(false);
 
-        //                                  Setzt den Modus auf Debugging/Normal        Debugging = true
-        gameController = new GameController(true); // Stelle sicher, dass der GameController initialisiert ist
+        //                                  Setzt den Modus auf Debugging/Normal Debugging = true
+        gameController = new GameController(false
+        ); // Stelle sicher, dass der GameController initialisiert ist
         Game.FPS = FPS;
         startGame(Game.FPS);
+
     }
 
+    /**
+     * Starts the Game
+     * @param FPS Frames Per Second -> The count of updates the Window is recieving in a second
+     */
     public void startGame(int FPS) {
         this.setTitle("Game");
 
-        this.setResizable(false);
+        this.setResizable(true);
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
         this.setFocusable(true);
         gameWindow = new GameWindow();
@@ -62,22 +74,33 @@ public class Game extends JFrame {
 
         icon = RenderUtil.loadTexture(FileUtil.getFileByResource("textures/player/player_anim_mid.png"));
         this.setIconImage(icon);
-
-        this.setVisible(true);
+        //Wenn das Menü auftaucht soll das SpielFrame nicht sichtbar sein
+        MainMenu.windowLocation = getLocation();
+        setVisible(false);
 
         // GameController auf Menü setzen und Menü anzeigen
         gameController.setGamestate(GameController.Gamestate.MENU);
         mainMenu.showMenu(); // Menü wird jetzt angezeigt
+        mainMenu.setLocation(MainMenu.windowLocation);
         audioController = new AudioController();
         try {
             audioController.loadByDir();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
         pack();
     }
 
+    /**
+     * Logic to load a level
+     * @param level The levelname -> points to a directory in the resources
+     */
     public static void loadLevel(String level) {
+        MainMenu.windowLocation = mainMenu().getLocation();
+        instance.setVisible(true);
+        instance.setLocation(MainMenu.windowLocation);
+        audioController().playSound("background.wav",true);
         // Stelle sicher, dass das Level nur geladen wird, wenn das Menü nicht mehr aktiv ist
         Game.gameWindow.repaint();
         gameController.setGamestate(GameController.Gamestate.STARTING);
@@ -91,7 +114,12 @@ public class Game extends JFrame {
 
         gameClock = new GameClock(Game.FPS); // Starte den GameClock, um das Level zu aktualisieren
         gameClock.startGameThread();
+
     }
+
+    /**
+     * Static Getters/Methods to Get Access to Game Functionality
+     */
 
     public static GameWindow gameWindow() {
         return gameWindow;
@@ -103,6 +131,9 @@ public class Game extends JFrame {
 
     public static PlayerEntity player() {
         return player;
+    }
+    public static void showGameWindow(boolean showWindow) {
+        instance.setVisible(showWindow);
     }
 
     public static WorldTileManager worldTileManager() {
@@ -119,4 +150,7 @@ public class Game extends JFrame {
     public static MainMenu mainMenu() {
         return mainMenu;
     }
+    public static AudioController audioController() {return audioController;}
+
+
 }

@@ -11,6 +11,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 
+/**
+ * The way to load levels/maps by a directory
+ */
 public class WorldTileManager {
     public HashMap<Integer, TileTexture> tileLibrary;
     public HashMap<Integer, TileTexture> detailLibrary;
@@ -22,8 +25,10 @@ public class WorldTileManager {
 
     public int[][] loadedDetails;
 
-
-    //Todo: Redondante Methoden wie loadMapTextures in eine Methode fassen(loadfromfile(arr,src))
+    /**
+     * The Constructor to add all the textures
+     * and create the lists/maps
+     */
     public WorldTileManager() {
 
 
@@ -32,10 +37,15 @@ public class WorldTileManager {
         loadedMap = new int[Game.gameWindow().maxScreenCol][Game.gameWindow().maxScreenRows];
         loadedDetails = new int[Game.gameWindow().maxScreenCol][Game.gameWindow().maxScreenRows];
         collisionTileManager = new CollisionTileManager();
-        addTileToLibrary(new TileTexture(RenderUtil.loadTexture(FileUtil.getFileByResource("textures/map/tiles/floor01.png"))));
-        addTileToLibrary(new TileTexture(RenderUtil.loadTexture(FileUtil.getFileByResource("textures/map/tiles/grass01.png"))));
+        addTileToLibrary(new TileTexture(RenderUtil.loadTexture(FileUtil.getFileByResource("textures/map/tiles/air.png"))));
+        addTileToLibrary(new TileTexture(RenderUtil.loadTexture(FileUtil.getFileByResource("textures/map/tiles/grass_up.png"))));
+        addTileToLibrary(new TileTexture(RenderUtil.loadTexture(FileUtil.getFileByResource("textures/map/tiles/grass_up_left.png"))));
+        addTileToLibrary(new TileTexture(RenderUtil.loadTexture(FileUtil.getFileByResource("textures/map/tiles/grass_up_right.png"))));
+
         addDetailToLibrary(new TileTexture(RenderUtil.loadTexture(FileUtil.getFileByResource("textures/map/details/air.png"))));
         addDetailToLibrary(new TileTexture(RenderUtil.loadTexture(FileUtil.getFileByResource("textures/map/details/tree01.png"))));
+
+
     }
 
     private void addTileToLibrary(TileTexture tileTexture) {
@@ -49,8 +59,8 @@ public class WorldTileManager {
     }
 
     public void loadmap(String resource) {
-        loadMaptextures(resource + ".map");
-        loadDetails(resource + ".detail");
+        loadfromFile(resource+".map",loadedMap);
+        loadfromFile(resource+".detail",loadedDetails);
         collisionTileManager.loadMapCollisions(resource + ".collision");
 
     }
@@ -64,8 +74,7 @@ public class WorldTileManager {
 
 
     }
-
-    public void loadMaptextures(String resource) {
+    private void loadfromFile(String resource, int[][] array) {
         try {
             InputStream stream = WorldTileManager.class.getResourceAsStream(resource);
             BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
@@ -78,9 +87,9 @@ public class WorldTileManager {
                 String[] tileIds = currentLine.split(" ");
                 for (int col = 0; col < Game.gameWindow().maxScreenCol; col++) {
                     if (col < tileIds.length) { // Falls eine Zeile zu kurz ist
-                        loadedMap[col][row] = Integer.parseInt(tileIds[col]);
+                        array[col][row] = Integer.parseInt(tileIds[col]);
                     } else {
-                        loadedMap[col][row] = 0; // Standardwert setzen
+                        array[col][row] = 0; // Standardwert setzen
                     }
                 }
                 row++;
@@ -91,40 +100,20 @@ public class WorldTileManager {
             e.printStackTrace();
         }
     }
-
-    public void loadDetails(String resource) {
-        try {
-            InputStream stream = WorldTileManager.class.getResourceAsStream(resource);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
-
-            int row = 0;
-            while (row < Game.gameWindow().maxScreenRows) {
-                String currentLine = reader.readLine();
-                if (currentLine == null) break;
-
-                String[] tileIds = currentLine.split(" ");
-                for (int col = 0; col < Game.gameWindow().maxScreenCol; col++) {
-                    if (col < tileIds.length) {
-                        loadedDetails[col][row] = Integer.parseInt(tileIds[col]);
-                    } else {
-                        loadedDetails[col][row] = 0;
-                    }
-                }
-                row++;
-            }
-            reader.close();
-            stream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
+    /**
+     * The Method to render the whole map/level
+     */
     public void render(Graphics2D graphics2D) {
         render(graphics2D, loadedMap, tileLibrary);
         render(graphics2D, loadedDetails, detailLibrary);
     }
 
+    /**
+     * The Method to render a map array
+     * @param graphics2D The needed instance to render to the screen
+     * @param map the loaded map array
+     * @param tiles a {@link java.util.Map Map} to get the right Image of the texture index
+     */
     private void render(Graphics2D graphics2D, int[][] map, HashMap<Integer, TileTexture> tiles) {
         int col = 0;
         int row = 0;
@@ -144,6 +133,9 @@ public class WorldTileManager {
         }
     }
 
+    /**
+     * Loads the collisions of the level/map
+     */
     public class CollisionTileManager {
         public int[][] worldCollision;
         public int[] levelGoal;
@@ -163,6 +155,10 @@ public class WorldTileManager {
 
         }
 
+        /**
+         * Loads the map collisions from a file
+         * @param resource The String file resource
+         */
         public void loadMapCollisions(String resource) {
             try {
                 InputStream stream = WorldTileManager.class.getResourceAsStream(resource);
