@@ -90,13 +90,16 @@ public class GameWindow extends JPanel {
             graphics2D.drawString("Won, Time: "+(Game.gameClock().scoreManager.getTimeInCurrentLevelSec()), screenWidth / 2 -100, ScreenHeight / 2 -100);
             graphics2D.setFont(new Font("Arial", Font.PLAIN, 20));
             graphics2D.drawString("Press Space to Go Back to the Menu!",screenWidth / 2 -100, ScreenHeight / 2 -75);
+
+            //Bestzeit anzeigen
+            graphics2D.drawString("Bestzeit für das Level: "+ Game.gameClock().scoreManager.readBestScore(Game.getCurrentLevel()) +"s",screenWidth / 2 -100, ScreenHeight / 2 - 50);
         }
 
         //Die Zeit oben Anzeigen
         graphics2D.setColor(Color.WHITE);
         graphics2D.setFont(new Font("Arial",Font.PLAIN,20));
         graphics2D.drawString(Game.gameClock().scoreManager.getTimeInCurrentLevelSec() + "", 20, 20);
-        System.out.println(Game.gameClock().scoreManager.getTimeInCurrentLevelSec());
+
 
 
         //Don't put anything here
